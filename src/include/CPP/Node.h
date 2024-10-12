@@ -13,6 +13,7 @@ class Node {
     // Functions
     void test_insert(int temp);
     void infoDump();
+    void insert(int value);    
 
 
 
@@ -26,6 +27,15 @@ class Node {
         // std::vector<int> array;    // Array containing the node data in the form of integers
 };
 
+void Node::insert(int value) {
+    if (size == capacity) {
+        std::cout << "Node is full, cannot insert more keys." << std::endl;
+        return;
+    }
+
+    array[size] = value;
+    size++;
+}
 
 void Node::infoDump() {
     std::cout << "Size: " << size << std::endl;

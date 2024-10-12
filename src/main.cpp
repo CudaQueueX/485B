@@ -16,16 +16,20 @@ std::vector<int> gen_vector(int m);
 
 int main() {
 
-    std::cout << "Mathew's Branch" << std::endl;
+    // std::cout << "Mathew's Branch" << std::endl;
 
     BPQ<int> bpq(4, "testing");
 
 
     // Here
 
-    std::vector<int> temp = gen_vector(3);
+    std::vector<int> temp = gen_vector(4);
+    std::vector<int> temp2 = gen_vector(3); 
 
     bpq.insert_val(temp);
+    bpq.insert_val(temp2);
+
+    bpq.infoDump();
     // std::vector<int> temp2 = gen_vector(4);
 
 
