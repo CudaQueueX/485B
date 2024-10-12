@@ -7,31 +7,48 @@
 
 #include <iostream>
 #include <vector>
+#include <random>
 
-#include "include/CPP/MinHeap.h"
-#include "include/CPP/BPQ.h";
+#include "include/CPP/BPQ.h"
+
+
+std::vector<int> gen_vector(int m);
 
 int main() {
+
     std::cout << "Mathew's Branch" << std::endl;
-    std::cout << "Hello world" << std:: endl;
 
-    // initalize the heap
-    MinHeap<int> minHeap(6);
-    std::vector<int> arr = {15,10,5,4,3,2};
-    
-    // Build the minheap
-    std::cout << "Building Heap" << std::endl;
-    minHeap.buildHeap(arr);
-    std::cout << "Heap Built" << std::endl;
-
-    std::cout << "Heap Contents" << std::endl;
-    minHeap.printHeap();
-
-    
+    BPQ<int> bpq(4, "testing");
 
 
+    // Here
+
+    std::vector<int> temp = gen_vector(3);
+
+    bpq.insert_val(temp);
+    // std::vector<int> temp2 = gen_vector(4);
 
 
 
     return 0;
+}
+
+
+
+
+
+//Function that generates vectors of size m, fills them with random values and returns them
+std::vector<int> gen_vector(int m) {
+    std::vector<int> retval;
+
+    // Seed with a real random value, if available
+    std::random_device rd;
+
+    // Initialize random engine and distribution
+    std::mt19937 gen(rd());  // Standard mersenne_twister_engine
+    std::uniform_int_distribution<> dis(1, 100);  // Range [1, 100]
+
+    for(int i = 0; i < m; ++i)retval.push_back(dis(gen));
+
+    return retval;
 }
