@@ -10,26 +10,27 @@ class Node {
         // Constructor
         Node(int capacity = 0) : size(0), capacity(capacity), array(capacity) {}
 
-    // Functions
-    void test_insert(int temp);
-    void infoDump();
-    void insert(int value);    
+        // Functions
+        void test_insert(int temp);
+        void infoDump();
+        void insert(int value);    
 
-
-
+        int getMin() { return array[0]; }
+        int getMax() { return array[size - 1]; }
+        int spaceLeft() { return capacity - size; }
+        
         int size;                  // Current number of elements within the node
         int capacity;              // Maximum capacity of the node
         std::vector<int> array;    // Array containing the node data in the form of integers
-    
-    private:
-        // int size;                  // Current number of elements within the node
-        // int capacity;              // Maximum capacity of the node
-        // std::vector<int> array;    // Array containing the node data in the form of integers
+
 };
+
+
+
 
 void Node::insert(int value) {
     if (size == capacity) {
-        std::cout << "Node is full, cannot insert more keys." << std::endl;
+        // std::cout << "Node is full, cannot insert more keys." << std::endl;
         return;
     }
 
@@ -47,24 +48,5 @@ void Node::infoDump() {
     std::cout << std::endl;
 }
 
-void Node::test_insert(int temp){
-    
-    // Seed with a real random value, if available
-    std::random_device rd;
-
-    // Initialize random engine and distribution
-    std::mt19937 gen(rd());  // Standard mersenne_twister_engine
-    std::uniform_int_distribution<> dis(1, 100);  // Range [1, 100]
-
-    for (int i = 0; i < 3; i++) {
-        // Generate and print a random number
-        int randomNumber = dis(gen);
-        std::cout << randomNumber << std::endl;
-
-        array[i] = randomNumber;
-        size++;
-    }
-
-}
 
 #endif // NODE_H
