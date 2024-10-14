@@ -1,33 +1,39 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.20)
 
-# Explicitly specify the C and C++ compilers before project()
+# Set compilers (ensure they are compatible with CUDA)
 set(CMAKE_C_COMPILER /usr/bin/gcc-13)
 set(CMAKE_CXX_COMPILER /usr/bin/g++-13)
 set(CMAKE_CUDA_COMPILER /usr/local/cuda/bin/nvcc)
-
-# Specify the CUDA host compiler
 set(CMAKE_CUDA_HOST_COMPILER /usr/bin/g++-13)
 
-# Set CUDA flags before project()
-set(CMAKE_CUDA_FLAGS_INIT "${CMAKE_CUDA_FLAGS_INIT} -allow-unsupported-compiler")
-
-project(CudaTest LANGUAGES CXX CUDA)
-
-# Export compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# Include directories
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
+# Set CUDA flags
+set(CMAKE_CUDA_FLAGS_INIT "${CMAKE_CUDA_FLAGS_INIT} -allow-unsupported-compiler")
 
+# Project declaration
+project(CudaTest LANGUAGES CXX CUDA)
+
+# Find the CUDA Toolkit
+find_package(CUDAToolkit REQUIRED)
+
+# Source files
 set(SOURCES
-    src/*.cu
+    src/gpu_priority_queue.cu
+    src/main.cpp
 )
 
-add_executable(CudaTest ${SOURCES})
+# Add executable
+add_executable(CudaPQTest ${SOURCES})
 
-target_link_libraries(CudaTest PRIVATE ${CMAKE_CUDA_LIBRARIES})
+# Include CUDA directories
+target_include_directories(CudaPQTest PRIVATE ${CUDAToolkit_INCLUDE_DIRS})
 
-set_target_properties(CudaTest PROPERTIES
+# Link CUDA libraries
+target_link_libraries(CudaPQTest PRIVATE ${CUDAToolkit_LIBRARIES})
+
+# Target properties
+set_target_properties(CudaPQTest PROPERTIES
     CUDA_SEPARABLE_COMPILATION ON
     CUDA_ARCHITECTURES "80"
 )
