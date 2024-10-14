@@ -31,4 +31,8 @@
 *.out
 *.app
 
+.clangd
+compile_flags.txt
+
 .cache/
+build/
