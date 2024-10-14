@@ -1,5 +1,3 @@
-// priority_queue_tests.cu
-
 #include "gpu_priority_queue.h"
 #include <algorithm>
 #include <cuda.h>
