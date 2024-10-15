@@ -1,8 +1,13 @@
 #include "cuda_runner.h"
 #include "../src/cuda/cuda_basic_pq.h"
 #include <algorithm>
+#include <chrono>
 #include <climits>
+#include <cmath>
+#include <ctime>
+#include <fstream>
 #include <iostream>
+#include <numeric>
 #include <vector>
 
 namespace cuda {
@@ -229,4 +234,173 @@ void run_edge_case_test() {
 /****************************************************
                   PERFORMANCE TESTS
 *****************************************************/
+
+void run_single_insertion_test(std::ofstream &csv_file) {
+  // Parameters
+  const int num_runs = 5;
+  const std::vector<int> num_operations = {100, 1000, 10000, 100000};
+
+  std::cout << "Running CUDA Test ...\n";
+  std::srand(std::time(nullptr));
+  for (int i = 0; i < num_operations.size(); i++) {
+    int num_ops = num_operations[i];
+    for (int run = 0; run < num_runs; ++run) {
+      cuda_pq::PriorityQueue pq(num_ops);
+      auto start = std::chrono::high_resolution_clock::now();
+      for (int k = 0; k < num_ops; ++k) {
+        pq.insert(PQNode{std::rand(), k});
+      }
+      auto end = std::chrono::high_resolution_clock::now();
+      double elapsed =
+          std::chrono::duration_cast<std::chrono::milliseconds>(end - start)
+              .count();
+
+      // Write run to csv
+      csv_file << "single_insertion," << num_ops << "," << run + 1 << ","
+               << elapsed << "," << 1 << std::endl;
+
+      // Log run to console
+      std::cout << "Test: single_insertion, Operations: " << num_ops
+                << ", Run: " << run + 1 << ", Time: " << elapsed << " ms"
+                << std::endl;
+    }
+  }
+  std::cout << "\n" << std::endl;
+}
+
+void run_single_extraction_test(std::ofstream &csv_file) {
+  // Parameters
+  const int num_runs = 5;
+  const std::vector<int> num_operations = {100, 1000, 10000, 100000};
+
+  std::cout << "Running CUDA Test ...\n";
+  std::srand(std::time(nullptr));
+  for (int i = 0; i < num_operations.size(); i++) {
+    int num_ops = num_operations[i];
+    for (int run = 0; run < num_runs; ++run) {
+      // Initialize priority queue with random elements
+      cuda_pq::PriorityQueue pq(num_ops);
+      std::vector<PQNode> nodes;
+      for (int k = 0; k < num_ops; ++k) {
+        nodes.push_back(PQNode{std::rand(), k});
+      }
+      pq.insert(nodes);
+
+      PQNode extracted_node;
+      // Start run timer
+      auto start = std::chrono::high_resolution_clock::now();
+      for (int k = 0; k < num_ops; ++k) {
+        extracted_node = pq.extract();
+      }
+      auto end = std::chrono::high_resolution_clock::now();
+      double elapsed =
+          std::chrono::duration_cast<std::chrono::milliseconds>(end - start)
+              .count();
+
+      // Write run to csv
+      csv_file << "single_extraction," << num_ops << "," << run + 1 << ","
+               << elapsed << "," << 1 << std::endl;
+
+      // Log run to console
+      std::cout << "Test: single_extraction, Operations: " << num_ops
+                << ", Run: " << run + 1 << ", Time: " << elapsed << " ms"
+                << std::endl;
+    }
+  }
+  std::cout << "\n" << std::endl;
+}
+
+void run_batch_insertion_test(std::ofstream &csv_file) {
+  // Parameters
+  const int num_runs = 5;
+  const std::vector<int> num_operations = {1000, 10000, 100000};
+  const std::vector<int> batch_sizes = {64, 128, 256};
+
+  std::cout << "Running CUDA Test ...\n";
+  std::srand(std::time(nullptr));
+  for (int i = 0; i < num_operations.size(); i++) {
+    int num_ops = num_operations[i];
+    for (int j = 0; j < batch_sizes.size(); j++) {
+      int batch_size = batch_sizes[j];
+      for (int run = 0; run < num_runs; ++run) {
+        cuda_pq::PriorityQueue pq(num_ops);
+        std::vector<PQNode> nodes_to_insert;
+        for (int k = 0; k < num_ops; ++k) {
+          nodes_to_insert.push_back(PQNode{std::rand(), k});
+        }
+        auto start = std::chrono::high_resolution_clock::now();
+        while (!nodes_to_insert.empty()) {
+          int current_batch_size =
+              std::min(batch_size, (int)nodes_to_insert.size());
+          std::vector<PQNode> batch(nodes_to_insert.begin(),
+                                    nodes_to_insert.begin() +
+                                        current_batch_size);
+          pq.insert(batch);
+          nodes_to_insert.erase(nodes_to_insert.begin(),
+                                nodes_to_insert.begin() + current_batch_size);
+        }
+        auto end = std::chrono::high_resolution_clock::now();
+        double elapsed =
+            std::chrono::duration_cast<std::chrono::milliseconds>(end - start)
+                .count();
+
+        // Write run to csv
+        csv_file << "batch_insertion," << num_ops << "," << run + 1 << ","
+                 << elapsed << "," << batch_size << std::endl;
+
+        // Log run to console
+        std::cout << "Test: batch_insertion, Operations: " << num_ops
+                  << ", Run: " << run + 1 << ", Time: " << elapsed << " ms"
+                  << ", Batch Size: " << batch_size << std::endl;
+      }
+    }
+    std::cout << "\n" << std::endl;
+  }
+}
+
+void run_batch_extraction_test(std::ofstream &csv_file) {
+  // Parameters
+  const int num_runs = 5;
+  const std::vector<int> num_operations = {1000, 10000, 100000};
+  const std::vector<int> batch_sizes = {64, 128, 256};
+
+  std::cout << "Running REFERENCE Test ...\n";
+  std::srand(std::time(nullptr));
+  for (size_t i = 0; i < num_operations.size(); ++i) {
+    int num_ops = num_operations[i];
+    for (size_t j = 0; j < batch_sizes.size(); ++j) {
+      int batch_size = batch_sizes[j];
+      for (int run = 0; run < num_runs; ++run) {
+        cuda_pq::PriorityQueue pq(num_ops);
+        std::vector<PQNode> nodes;
+        for (int k = 0; k < num_ops; ++k) {
+          nodes.push_back(PQNode{std::rand(), k});
+        }
+        pq.insert(nodes);
+
+        // Start timing the batch deletions
+        auto start = std::chrono::high_resolution_clock::now();
+        while (!pq.isEmpty()) {
+          int current_batch_size = std::min(batch_size, pq.size());
+          std::vector<PQNode> extracted_nodes = pq.extract(current_batch_size);
+        }
+        auto end = std::chrono::high_resolution_clock::now();
+        double elapsed =
+            std::chrono::duration_cast<std::chrono::milliseconds>(end - start)
+                .count();
+
+        // Write run to CSV
+        csv_file << "batch_deletion," << num_ops << "," << (run + 1) << ","
+                 << elapsed << "," << batch_size << std::endl;
+
+        // Log run to console
+        std::cout << "Test: batch_deletion, Operations: " << num_ops
+                  << ", Run: " << (run + 1) << ", Time: " << elapsed << " ms"
+                  << ", Batch Size: " << batch_size << std::endl;
+      }
+    }
+    std::cout << "\n" << std::endl;
+  }
+}
+
 } // namespace cuda
