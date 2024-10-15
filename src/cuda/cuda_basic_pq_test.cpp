@@ -1,4 +1,6 @@
-#include "gpu_priority_queue.h"
+// gpu_priority_queue_test.cpp: Test cases for the GPU Priority Queue
+
+#include "cuda_basic_pq.h"
 #include <algorithm>
 #include <cuda.h>
 #include <cuda_runtime.h>
@@ -6,7 +8,7 @@
 #include <random>
 #include <vector>
 
-using namespace gpu_pq;
+using namespace cuda_pq;
 
 // Helper function to generate random PQNodes
 std::vector<PQNode> generateRandomNodes(int num_elements, int min_key = 0,
