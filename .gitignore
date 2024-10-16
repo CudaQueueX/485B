@@ -36,3 +36,5 @@ compile_flags.txt
 
 .cache/
 build/
+.venv/
+.ipynb_checkpoints/
