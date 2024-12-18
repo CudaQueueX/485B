@@ -30,7 +30,8 @@ public:
 
 private:
   void swap_pq();
-  void sort();
+  void sort_bitonic();
+  void sort_radix();
   int capacity;
   int *h_size;
 

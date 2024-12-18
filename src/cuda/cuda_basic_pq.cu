@@ -2,6 +2,7 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <iostream>
+#include <limits.h>
 
 namespace cuda_pq {
 
@@ -198,7 +199,7 @@ PQNode PriorityQueue::extract() {
   return h_node;
 }
 
-void PriorityQueue::sort() {
+void PriorityQueue::sort_bitonic() {
   int size = this->size();
   if (!isPowerOf2(size)) {
     size = nextPowerOf2(size);
@@ -215,6 +216,103 @@ void PriorityQueue::sort() {
     }
   }
 }
+__global__ void findMaxKernel(PQNode *d_pq, int *d_maxKey, int size) {
+    int idx = threadIdx.x + blockIdx.x * blockDim.x;
+
+    // Shared memory to store the local max in each block
+    __shared__ int localMax[256]; 
+    // Initialize shared memory
+    if (idx < size)
+    localMax[threadIdx.x] = d_pq[idx].key;
+    else localMax[threadIdx.x] = INT_MIN; // Handle out-of-bounds threads
+    
+    __syncthreads();
+
+    // Reduce within the block to find the local maximum
+    for (int stride = blockDim.x / 2; stride > 0; stride >>= 1) {
+        if (threadIdx.x < stride && idx + stride < size)localMax[threadIdx.x] = max(localMax[threadIdx.x], localMax[threadIdx.x + stride]);
+        __syncthreads();
+    }
+
+    // The first thread in the block writes its result to global memory
+    if (threadIdx.x == 0) atomicMax(d_maxKey, localMax[0]);
+    
+}
+
+
+
+void PriorityQueue::sort_radix() {
+  int size = this->size();
+
+  int *d_key;
+  cudaMalloc(&d_key, size * sizeof(int));
+  cudaMemset(d_key, INT_MIN, sizeof(int));
+
+  const int maxThreadsPerBlock = 256;
+  int threadsPerBlock = std::min(size, maxThreadsPerBlock);
+  int blocksPerGrid = (size + threadsPerBlock - 1) / threadsPerBlock;
+
+  findMaxKernel<<<blocksPerGrid, threadsPerBlock>>>(d_pq, d_key, size);
+  cudaDeviceSynchronize();
+
+  int max_key;
+  cudaMemcpy(&max_key, d_key, sizeof(int), cudaMemcpyDeviceToHost);
+
+  PQNode *d_temp;
+  cudaMalloc(&d_temp, size * sizeof(PQNode));
+
+
+  // Radix sort by each digit
+  for (int exp = 1; max_key / exp > 0; exp *= 10) {
+      countingSortKernel<<<blocksPerGrid, threadsPerBlock>>>(d_pq, d_temp, nullptr, size, exp);
+      cudaDeviceSynchronize();
+
+      // Swap buffers
+      PQNode *temp = d_pq;
+      d_pq = d_temp;
+      d_temp = temp;
+  }
+
+  // Clean up temporary buffer
+  cudaFree(d_temp);
+
+}
+
+
+
+// Using the C++ version of counting sort which is changed to run with cuda
+__global__ void countingSortKernel(PQNode *d_input, PQNode *d_output, int *d_count, int n, int exp) {
+  // idx is used per thread to select its specific digit.
+  int idx = blockIdx.x * blockDim.x + threadIdx.x;
+
+
+  if(idx < n) {
+    // create shared memory for the count array
+    __shared__ int count[10];
+    if(threadIdx.x < 10) count[threadIdx.x] = 0; // initialize the counts to be 0
+    __syncthreads();
+
+    int temp = (d_input[idx].key / exp) % 10;
+    atomicAdd(&count[temp], 1); // increment the count of the digit
+    __syncthreads();
+
+    // calculate the prefix sum of the count array
+    if(threadIdx.x < 10) {
+      for(int i = 1; i <= threadIdx.x; i++) {
+        count[threadIdx.x] += count[threadIdx.x - i];
+      }
+    }
+    __syncthreads();
+
+    // output
+    if(idx < n) {
+      d_output[count[temp]] = d_input[idx];
+    }
+  
+  }
+}
+                                  
+
 
 int PriorityQueue::size() const {
   cudaMemcpy(h_size, d_size, sizeof(int), cudaMemcpyDeviceToHost);

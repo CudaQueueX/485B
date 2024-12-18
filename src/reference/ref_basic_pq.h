@@ -28,7 +28,14 @@ public:
   void print() const;
 
 private:
+  // Standard library sort
   void sort();
+  // Merge Sort
+  void merge(std::vector<int>& arr, int left, int mid, int right);
+  void merge_sort(std::vector<int>&arr, int left, int right);
+  // Radix sort
+  void radix_sort(std::vector<int>& arr);
+  void counting_sort(std::vector<int>& input, int exp);
 
   std::vector<PQNode> pq;
   int capacity;
