@@ -10,9 +10,12 @@
 
 class Node {
 public:
-    const int x;
-    const int y;
+    int x;
+    int y;
     bool isTraversible = true; // true means the node can be traversed to (ie not a barrier node) 
+    
+    std::pair<int,int> parent; // parent node
+    
     int g = 0; // cost from starting node (s) to current node (n)
     int h = 0; // from current node (s) to the end node (t)
     int f = 0; // f(n) = g(n) + h(n)

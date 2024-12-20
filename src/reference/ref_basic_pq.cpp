@@ -36,6 +36,28 @@ void PriorityQueue::insert(PQNode node) {
   sort();
 }
 
+// Overloaded insert function
+void ref_pq::PriorityQueue::insert(const Node& n) {
+  // ref_pq references the namespace
+  if(pq_size >= capacity) {
+    std::cout << "Priority Queue is full. Node was not inserted." << std::endl;
+    return;
+  }
+  pq.push_back(PQNode(n));
+  pq_size++;
+  sort();
+}
+
+// New function to extract a node, acts as a wrapper for the extract function due to encapsulation
+Node ref_pq::PriorityQueue::extractNode() {
+  if (isEmpty()) {
+    std::cout << "Priority Queue is empty" << std::endl;
+    return Node(-1, -1, false);
+  }
+  PQNode retval = extract();
+  return retval.node;
+}
+
 std::vector<PQNode> PriorityQueue::extract(int batch_size) {
   std::vector<PQNode> result;
   if (isEmpty()) {
@@ -67,7 +89,7 @@ PQNode PriorityQueue::extract() {
 
 void PriorityQueue::sort() {
   std::sort(pq.begin(), pq.end(),
-            [](const PQNode &a, const PQNode &b) { return a.key < b.key; });
+            [](const PQNode &a, const PQNode &b) { return a.node.f < b.node.f; });
 }
 
 void PriorityQueue::merge(std::vector<int>& arr, int left, int mid, int right) {
@@ -116,9 +138,6 @@ void PriorityQueue::merge_sort(std::vector<int>& arr, int left, int right) {
   merge(arr, left, mid, right);
 }
 
-void PriorityQueue::radix_sort(std::vector<int>& arr) {
-
-}
 
 void PriorityQueue::counting_sort(std::vector<int>& input, int exp) {
   int size = input.size();

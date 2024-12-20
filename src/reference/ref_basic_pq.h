@@ -5,8 +5,12 @@
 #include "../node.h"
 
 struct PQNode {
-  int key;
-  int value;
+  Node node; // encapsulation of the Node class
+  
+  PQNode(const Node &n) : node(n) {} // constructor 
+  
+  // default constructor
+  PQNode() : node(Node(-1, -1, false)) {}
 };
 
 namespace ref_pq {
@@ -22,6 +26,10 @@ public:
 
   void insert(std::vector<PQNode> nodes);
   void insert(PQNode node);
+
+  void insert(const Node& n); // overloaded insert function
+  Node extractNode(); // updated extract node function
+
   std::vector<PQNode> extract(int batch_size);
   PQNode extract();
   int size() const;
