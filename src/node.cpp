@@ -3,7 +3,7 @@
 #include "Node.h"
 
 // Constructor initializes the node's coordinates
-Node::Node(int x, int y) : x(x), y(y) {}
+Node::Node(int x, int y, bool isTraversible) : x(x), y(y), isTraversible(isTraversible), g(0), h(0), f(0) {}
 
 // Add a neighbor with a weight
 void Node::addNeighbour(int neighborX, int neighborY, double weight) {

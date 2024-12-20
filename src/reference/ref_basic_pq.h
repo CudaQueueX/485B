@@ -2,6 +2,7 @@
 #define REF_BASIC_PQ_H
 
 #include <vector>
+#include "../node.h"
 
 struct PQNode {
   int key;
