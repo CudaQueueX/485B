@@ -47,6 +47,9 @@ public:
     // Heuristics
     int distance_euclidean(std::pair<int, int> p1, std::pair<int, int> p2) const;
     int distance_manhattan(std::pair<int, int> p1, std::pair<int, int> p2) const;
+
+    // export graph matrix
+    void exportGraph(const std::vector<Node>& path,const std::string& filename) const;
 };
 
 #endif // GRAPH_H

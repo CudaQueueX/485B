@@ -4,6 +4,7 @@
 #include <cmath>
 #include <algorithm>
 #include <random>
+#include <fstream>
 
 
 // Constructor to initialize the grid and set edge weights to -infinity
@@ -134,6 +135,9 @@ void Graph::run_a_star(std::pair<int, int> start, std::pair<int, int> end, std::
             // std::cout << "Current Node: (" << current.x << ", " << current.y << ")" << "End Node: (" << end.first << ", " << end.second << ")" << std::endl;
             auto path = reconstruct_path(current);
             printPath(path);
+
+            std::cout << "Exporting Graph and Path" << std::endl;
+            exportGraph(path, "graph_data.txt");
             return;
         }
 
@@ -200,7 +204,7 @@ int Graph::distance_manhattan(std::pair<int, int> p1, std::pair<int, int> p2) co
 
 void Graph::printPath(const std::vector<Node>& path) const {
     // Create a copy of the grid to mark the path
-    std::vector<std::vector<char>> gridRepresentation(rows, std::vector<char>(cols, '0'));
+    std::vector<std::vector<char>> gridRepresentation(rows, std::vector<char>(cols, ' '));
 
     // Mark non-traversable tiles
     for (int i = 0; i < rows; ++i) {
@@ -268,5 +272,36 @@ void Graph::generateRandomLines(int numLines, int maxLineLength) {
             }
         }
     }
+}
+
+void Graph::exportGraph(const std::vector<Node>& path,const std::string& filename) const {
+    std::ofstream file(filename);
+
+    if (!file.is_open()) {
+        std::cerr << "Error opening file: " << filename << std::endl;
+        return;
+    }
+
+    // Write the start and end nodes
+    file << "start_node: (" << startNode.first << ", " << startNode.second << ")\n";
+    file << "end_node: (" << endNode.first << ", " << endNode.second << ")\n";
+
+    // Write all nodes with their traversability
+    file << "nodes:\n";
+    for (int i = 0; i < rows; ++i) {
+        for (int j = 0; j < cols; ++j) {
+            file << "(" << i << ", " << j << ", " << (grid[i][j].isTraversible ? "1" : "0") << ")\n";
+        }
+    }
+
+    // Write the path from source to sink
+    file << "path:\n";
+    for (const auto& node : path) {
+        file << "(" << node.x << ", " << node.y << ")\n";
+    }
+
+    // Close the file
+    file.close();
+    std::cout << "Graph and path exported to " << filename << std::endl;
 }
 

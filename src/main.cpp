@@ -5,17 +5,17 @@
 #include <iostream>
 
 int main() {
-    int rows = 25;
-    int cols = 25;
-    std::pair<int,int> startNode = {1, 1};
-    std::pair<int, int> endNode = {23,23};
+    int rows = 30;
+    int cols = 30;
+    std::pair<int,int> startNode = {2, 2};
+    std::pair<int, int> endNode = {28,25};
 
     std::vector<std::pair<int,int>> obstactles = {{2,1}};
 
     // Create a 5x5 graph
     Graph graph(rows, cols, startNode, endNode);
     // graph.setNonTraversable(obstactles);
-    graph.generateRandomLines(5, 4);
+    graph.generateRandomLines(60, 7);
 
     // std::cout << "Graph Structure (1 = Traversible, 0 = Non-Traversible):" << std::endl;
     // graph.printGraph();
