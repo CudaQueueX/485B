@@ -3,7 +3,7 @@
 <h3 align="center">GPU-Based Batched Priority Queue</h3>
 
 <p align="center">
-  An implementation of a Batched Priority Queue (BPQ) optimized for GPUs, serving as the foundation for future development of GPU-accelerated algorithms like the A* pathfinding algorithm.
+  An implementation of a Batched Priority Queue (BPQ) optimized for GPUs, serving as the foundation for future development of GPU-accelerated algorithms.
 </p>
 </div>
 
